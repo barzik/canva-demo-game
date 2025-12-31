@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { margin: 0; overflow: hidden; background: #222; font-family: sans-serif; }
+        #game-container { position: relative; width: 100vw; height: 100vh; cursor: crosshair; }
+        #score { position: absolute; top: 10px; left: 10px; color: white; font-size: 24px; z-index: 10; }
+        #player { 
+            position: absolute; bottom: 20px; left: 50%; 
+            width: 80px; height: 15px; background: #00ffcc; 
+            border-radius: 10px; transform: translateX(-50%);
+            box-shadow: 0 0 15px #00ffcc;
+        }
+        .falling-object { 
+            position: absolute; width: 25px; height: 25px; 
+            background: #ff4757; border-radius: 50%; 
+            box-shadow: 0 0 10px #ff4757;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="score">Score: 0</div>
+        <div id="player"></div>
+    </div>
+
+    <script>
+        const player = document.getElementById('player');
+        const container = document.getElementById('game-container');
+        const scoreElement = document.getElementById('score');
+        let score = 0;
+
+        // Mouse movement for desktop
+        window.addEventListener('mousemove', (e) => {
+            let x = e.clientX;
+            // Keep player within bounds
+            if (x < 40) x = 40;
+            if (x > window.innerWidth - 40) x = window.innerWidth - 40;
+            player.style.left = x + 'px';
+        });
+
+        // Touch movement for Canva Mobile
+        window.addEventListener('touchmove', (e) => {
+            let x = e.touches[0].clientX;
+            player.style.left = x + 'px';
+            e.preventDefault(); 
+        }, { passive: false });
+
+        function createObject() {
+            const obj = document.createElement('div');
+            obj.classList.add('falling-object');
+            obj.style.left = Math.random() * (window.innerWidth - 30) + 'px';
+            obj.style.top = '-30px';
+            container.appendChild(obj);
+
+            let top = -30;
+            const fallSpeed = 3 + (score / 10); // Gets faster as you score
+            
+            const fallInterval = setInterval(() => {
+                top += fallSpeed;
+                obj.style.top = top + 'px';
+
+                const pRect = player.getBoundingClientRect();
+                const oRect = obj.getBoundingClientRect();
+
+                if (oRect.bottom >= pRect.top && oRect.left < pRect.right && oRect.right > pRect.left) {
+                    score++;
+                    scoreElement.innerText = `Score: ${score}`;
+                    obj.remove();
+                    clearInterval(fallInterval);
+                }
+
+                if (top > window.innerHeight) {
+                    obj.remove();
+                    clearInterval(fallInterval);
+                }
+            }, 20);
+        }
+
+        setInterval(createObject, 800);
+    </script>
+</body>
+</html>
